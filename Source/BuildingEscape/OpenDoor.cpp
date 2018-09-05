@@ -6,11 +6,7 @@
 // Sets default values for this component's properties
 UOpenDoor::UOpenDoor()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
 
@@ -18,9 +14,7 @@ UOpenDoor::UOpenDoor()
 void UOpenDoor::BeginPlay()
 {
 	Super::BeginPlay();
-    OpenDoor();
-	// ...
-	
+    actorToTrigger = GetWorld()->GetFirstPlayerController()->GetPawn();
 }
 
 
@@ -28,17 +22,21 @@ void UOpenDoor::BeginPlay()
 void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
+    if (trigger->IsOverlappingActor(actorToTrigger)){
+        isOpened = true;
+        OpenDoor();
+    }else if (isOpened){
+        CloseDoor();
+        isOpened = false;
+    }
 }
 
 void UOpenDoor::OpenDoor(){
-    auto owner = GetOwner();
     auto rotator = FRotator(0.0f, -80.0f, 0.0f);
     GetOwner()->SetActorRotation(rotator);
-    UE_LOG(LogTemp, Warning, TEXT("Created rorartion"));
 }
 
 void UOpenDoor::CloseDoor(){
-    
+    auto rotator = FRotator(0.0f, 0.0f, 0.0f);
+    GetOwner()->SetActorRotation(rotator);
 }
