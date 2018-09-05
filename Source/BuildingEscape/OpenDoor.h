@@ -31,9 +31,12 @@ private:
     
     AActor* actorToTrigger;
     
-    UPROPERTY(EditAnywhere)
-    bool isOpened;
+    bool isOpened = false;
     
+    UPROPERTY(EditAnywhere)
+    float openDoorDelay = 1.f;
+    
+    float lastDoorOpenSeconds = 1.f;
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

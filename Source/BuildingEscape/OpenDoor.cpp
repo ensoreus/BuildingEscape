@@ -25,7 +25,7 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
     if (trigger->IsOverlappingActor(actorToTrigger)){
         isOpened = true;
         OpenDoor();
-    }else if (isOpened){
+    }else if (isOpened && (GetWorld()->GetTimeSeconds() - lastDoorOpenSeconds > openDoorDelay)){
         CloseDoor();
         isOpened = false;
     }
@@ -34,6 +34,7 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 void UOpenDoor::OpenDoor(){
     auto rotator = FRotator(0.0f, -80.0f, 0.0f);
     GetOwner()->SetActorRotation(rotator);
+    lastDoorOpenSeconds = GetWorld()->GetTimeSeconds();
 }
 
 void UOpenDoor::CloseDoor(){
