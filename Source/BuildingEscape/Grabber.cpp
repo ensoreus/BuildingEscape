@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Grabber.h"
-
+#define OUT
 
 // Sets default values for this component's properties
 UGrabber::UGrabber()
@@ -18,7 +18,7 @@ UGrabber::UGrabber()
 void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
-    UE_LOG(LogTemp, Warning, TEXT("Granner online!"));
+    UE_LOG(LogTemp, Warning, TEXT("Grabber online!"));
 	// ...
 	
 }
@@ -28,7 +28,11 @@ void UGrabber::BeginPlay()
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
+    FVector playerPawnLocation;
+    FRotator playerPawnRotation;
+    GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+                                                               OUT playerPawnLocation,
+                                                               OUT playerPawnRotation);
+    UE_LOG(LogTemp, Warning, TEXT("location:%s rotation:%s"), *playerPawnLocation.ToString(), *playerPawnRotation.ToString());
 }
 
