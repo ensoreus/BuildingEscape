@@ -20,6 +20,20 @@ void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
     UE_LOG(LogTemp, Warning, TEXT("Grabber online!"));
+    physicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+    if (physicsHandle == nullptr) {
+      UE_LOG(LogTemp, Warning, TEXT("handle is empty"));
+    }else{
+      UE_LOG(LogTemp, Warning, TEXT("handle is inited"));
+    }
+    
+    inputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
+    if (inputComponent == nullptr) {
+      UE_LOG(LogTemp, Error, TEXT("input is empty"));
+    }else{
+      inputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::grab);
+      inputComponent->BindAction("Grab", IE_Released, this, &UGrabber::ungrab);
+    }
 }
 
 
@@ -36,7 +50,20 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
     auto line = playerPawnLocation + playerPawnRotation.Vector() * reach;
     DrawDebugLine(GetWorld(), playerPawnLocation, line, FColor(100.f, 180.f, 100.f, 1.f));
     
-    FCollisionQueryParams traceparams(FName(TEXT("")), false, GetOwner());
+    
+      
+    
+}
+
+void UGrabber::grab(){
+  FCollisionQueryParams traceparams(FName(TEXT("")), false, GetOwner());
+   FVector playerPawnLocation;
+    FRotator playerPawnRotation;
+    GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+                                                               OUT playerPawnLocation,
+                                                               OUT playerPawnRotation);
+    
+    auto line = playerPawnLocation + playerPawnRotation.Vector() * reach;
     FHitResult hitResult;
     GetWorld()->LineTraceSingleByObjectType(OUT hitResult,
                                             playerPawnLocation,
@@ -44,9 +71,18 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
                                             FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
                                             traceparams);
     if (hitResult.GetActor() != nullptr) {
-      UE_LOG(LogTemp, Warning, TEXT("hit: %s"), *hitResult.GetActor()->GetName());
+      UE_LOG(LogTemp, Warning, TEXT("Grabbed: %s"), *hitResult.GetActor()->GetName());
+      physicsHandle->GrabComponent(hitResult.GetComponent(),
+                                   hitResult.BoneName,
+                                   line,
+                                   false
+                                   );
     }
-      
     
+}
+
+void UGrabber::ungrab(){
+  
+  UE_LOG(LogTemp, Warning, TEXT("UnGrabbed: "));
 }
 
