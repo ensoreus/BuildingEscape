@@ -2,6 +2,7 @@
 
 #include "Grabber.h"
 #include "DrawDebugHelpers.h"
+#include <tuple>
 #define OUT
 
 // Sets default values for this component's properties
@@ -18,16 +19,25 @@ UGrabber::UGrabber()
 // Called when the game starts
 void UGrabber::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
     UE_LOG(LogTemp, Warning, TEXT("Grabber online!"));
-    physicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+    findPhysicshandle();
+    findInputComponent();
+   
+}
+
+void UGrabber::findPhysicshandle(){
+  physicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
     if (physicsHandle == nullptr) {
-      UE_LOG(LogTemp, Warning, TEXT("handle is empty"));
+      UE_LOG(LogTemp, Error, TEXT("handle is empty"));
     }else{
       UE_LOG(LogTemp, Warning, TEXT("handle is inited"));
-    }
-    
-    inputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
+    } 
+}
+
+void UGrabber::findInputComponent()
+{
+  inputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
     if (inputComponent == nullptr) {
       UE_LOG(LogTemp, Error, TEXT("input is empty"));
     }else{
@@ -36,53 +46,68 @@ void UGrabber::BeginPlay()
     }
 }
 
-
-// Called every frame
-void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+std::tuple<FVector,FRotator> UGrabber::playerLocation() const
 {
-    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
     FVector playerPawnLocation;
     FRotator playerPawnRotation;
     GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
                                                                OUT playerPawnLocation,
                                                                OUT playerPawnRotation);
-    
-    auto line = playerPawnLocation + playerPawnRotation.Vector() * reach;
-    DrawDebugLine(GetWorld(), playerPawnLocation, line, FColor(100.f, 180.f, 100.f, 1.f));
-    
-    
-      
-    
+    return std::tuple<FVector, FRotator>(playerPawnLocation, playerPawnRotation);
 }
 
-void UGrabber::grab(){
-  FCollisionQueryParams traceparams(FName(TEXT("")), false, GetOwner());
-   FVector playerPawnLocation;
-    FRotator playerPawnRotation;
-    GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-                                                               OUT playerPawnLocation,
-                                                               OUT playerPawnRotation);
+FVector UGrabber::reachVector() const
+{
+  auto location = playerLocation();
+  FVector playerPawnLocation = std::get<0>(location);
+  FRotator playerPawnRotation = std::get<1>(location);
     
     auto line = playerPawnLocation + playerPawnRotation.Vector() * reach;
+    return line;
+}
+
+FHitResult UGrabber::rayCast() const
+{
     FHitResult hitResult;
+    auto line = reachVector();
+    auto playerpawnpos = playerLocation();
+    auto playerPawnLocation = std::get<0>(playerpawnpos);
+    FCollisionQueryParams traceparams(FName(TEXT("")), false, GetOwner());
     GetWorld()->LineTraceSingleByObjectType(OUT hitResult,
                                             playerPawnLocation,
                                             line,
                                             FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
                                             traceparams);
+    return hitResult;
+}
+
+// Called every frame
+void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+    auto playerPawnLocation = playerLocation();
+    auto line = reachVector();
+    DrawDebugLine(GetWorld(), std::get<0>(playerPawnLocation), line, FColor(100.f, 180.f, 100.f, 1.f));
+    if (physicsHandle->GrabbedComponent != nullptr) {
+      physicsHandle->SetTargetLocation(line);
+    }
+}
+
+void UGrabber::grab(){
+  auto hitResult = rayCast();
     if (hitResult.GetActor() != nullptr) {
       UE_LOG(LogTemp, Warning, TEXT("Grabbed: %s"), *hitResult.GetActor()->GetName());
+      auto line = reachVector();
       physicsHandle->GrabComponent(hitResult.GetComponent(),
                                    hitResult.BoneName,
-                                   line,
-                                   false
+                                   hitResult.GetComponent()->GetOwner()->GetActorLocation(),
+                                   true
                                    );
     }
-    
 }
 
 void UGrabber::ungrab(){
-  
+  physicsHandle->ReleaseComponent();
   UE_LOG(LogTemp, Warning, TEXT("UnGrabbed: "));
 }
 

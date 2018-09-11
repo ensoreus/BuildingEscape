@@ -2,11 +2,15 @@
 
 #pragma once
 
+
+
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Components/InputComponent.h"
+#include "tuple"
 #include "Grabber.generated.h"
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BUILDINGESCAPE_API UGrabber : public UActorComponent
@@ -31,6 +35,11 @@ private:
     UInputComponent* inputComponent = nullptr;
 
  protected:
+    FVector reachVector()const;
     void grab();
     void ungrab();
+    void findPhysicshandle();
+    void findInputComponent();
+    std::tuple<FVector, FRotator> playerLocation() const;
+    FHitResult rayCast() const;
 };
