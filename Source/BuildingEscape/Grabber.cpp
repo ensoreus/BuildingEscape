@@ -87,7 +87,7 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
     auto playerPawnLocation = playerLocation();
     auto line = reachVector();
-    DrawDebugLine(GetWorld(), std::get<0>(playerPawnLocation), line, FColor(100.f, 180.f, 100.f, 1.f));
+    //DrawDebugLine(GetWorld(), std::get<0>(playerPawnLocation), line, FColor(100.f, 180.f, 100.f, 1.f));
     if (physicsHandle->GrabbedComponent != nullptr) {
       physicsHandle->SetTargetLocation(line);
     }
@@ -108,6 +108,5 @@ void UGrabber::grab(){
 
 void UGrabber::ungrab(){
   physicsHandle->ReleaseComponent();
-  UE_LOG(LogTemp, Warning, TEXT("UnGrabbed: "));
 }
 
