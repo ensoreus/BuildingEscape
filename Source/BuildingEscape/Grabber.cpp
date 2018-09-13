@@ -61,9 +61,8 @@ FVector UGrabber::reachVector() const
   auto location = playerLocation();
   FVector playerPawnLocation = std::get<0>(location);
   FRotator playerPawnRotation = std::get<1>(location);
-    
-    auto line = playerPawnLocation + playerPawnRotation.Vector() * reach;
-    return line;
+  auto line = playerPawnLocation + playerPawnRotation.Vector() * reach;
+  return line;
 }
 
 FHitResult UGrabber::rayCast() const

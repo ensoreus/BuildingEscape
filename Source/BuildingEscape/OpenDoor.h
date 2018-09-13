@@ -5,8 +5,10 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Engine/TriggerVolume.h"
+#include "Runtime/Engine/Public/EngineUtils.h"
 #include "OpenDoor.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnOpenRequest);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BUILDINGESCAPE_API UOpenDoor : public UActorComponent
@@ -26,17 +28,18 @@ class BUILDINGESCAPE_API UOpenDoor : public UActorComponent
   UPROPERTY(EditAnywhere)
     float openAngle = 80.0f;
         
-  UPROPERTY(EditAnywhere)
-    ATriggerVolume* trigger;
-        
-  //        AActor* actorToTrigger; 
+  
+  ATriggerVolume* trigger = nullptr;
         
   bool isOpened = false;
   float getTotalMassOnTrigger() const;
         
   UPROPERTY(EditAnywhere)
     float openDoorDelay = 1.f;
-    
+
+  UPROPERTY(BlueprintAssignable)
+    FOnOpenRequest onOpenRequest;
+  
   float lastDoorOpenSeconds = 1.f;
  public:	
   // Called every frame

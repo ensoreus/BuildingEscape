@@ -14,19 +14,35 @@ UOpenDoor::UOpenDoor()
 void UOpenDoor::BeginPlay()
 {
   Super::BeginPlay();
+  auto iterator = TActorIterator<ATriggerVolume>(GetWorld());
+  for (;iterator; ++iterator)
+     {
+       if (iterator->GetName() == "openDoorTriggerVolume"){
+         UE_LOG(LogTemp, Warning, TEXT("found trigger!"));
+         trigger = *iterator;
+       }
+     }
   //    actorToTrigger = GetWorld()->GetFirstPlayerController()->GetPawn();
+  
 }
 
 float UOpenDoor::getTotalMassOnTrigger() const
 {
   TArray<AActor*> overlappedActors;
   TSubclassOf<AActor*> classFilter;
+  
+  if (trigger == nullptr) {
+    return 0.0f;
+  }
+  
   trigger->GetOverlappingActors(OUT overlappedActors);
   float sumMass = 0.0f;
-  for (const auto &actor : overlappedActors) {
-    auto component = actor->FindComponentByClass<UPrimitiveComponent>();
-    sumMass += component->GetMass();
-  }
+    for (const auto *actor : overlappedActors) {
+      auto component = actor->FindComponentByClass<UPrimitiveComponent>();
+      if (component != nullptr) {
+        sumMass += component->GetMass();        
+      }    
+    }
   return sumMass;
 }
 
@@ -35,8 +51,8 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 {
   Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
   auto sumMass = getTotalMassOnTrigger();
-  UE_LOG(LogTemp, Warning, TEXT("Mass isL %f"), sumMass);
-  if (sumMass > 30.f){
+
+  if (sumMass >= 30.f){
     isOpened = true;
     OpenDoor();
   }else if (isOpened && (GetWorld()->GetTimeSeconds() - lastDoorOpenSeconds > openDoorDelay)){
@@ -46,12 +62,11 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 }
 
 void UOpenDoor::OpenDoor(){
-  auto rotator = FRotator(0.0f, -80.0f, 0.0f);
-  GetOwner()->SetActorRotation(rotator);
+  onOpenRequest.Broadcast();
   lastDoorOpenSeconds = GetWorld()->GetTimeSeconds();
 }
 
 void UOpenDoor::CloseDoor(){
-  auto rotator = FRotator(0.0f, 0.0f, 0.0f);
-  GetOwner()->SetActorRotation(rotator);
+  //auto rotator = FRotator(0.0f, 0.0f, 0.0f);
+  // GetOwner()->SetActorRotation(rotator);
 }
