@@ -8,7 +8,8 @@
 #include "Runtime/Engine/Public/EngineUtils.h"
 #include "OpenDoor.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnOpenRequest);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnOpenDoorEvent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCloseDoorEvent);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BUILDINGESCAPE_API UOpenDoor : public UActorComponent
@@ -25,12 +26,9 @@ class BUILDINGESCAPE_API UOpenDoor : public UActorComponent
   virtual void OpenDoor();
   virtual void CloseDoor();
  private:
-  UPROPERTY(EditAnywhere)
-    float openAngle = 80.0f;
-        
-  
+  float openAngle = 80.0f;      
   ATriggerVolume* trigger = nullptr;
-        
+
   bool isOpened = false;
   float getTotalMassOnTrigger() const;
         
@@ -38,7 +36,9 @@ class BUILDINGESCAPE_API UOpenDoor : public UActorComponent
     float openDoorDelay = 1.f;
 
   UPROPERTY(BlueprintAssignable)
-    FOnOpenRequest onOpenRequest;
+    FOnOpenDoorEvent onOpenRequest;
+  UPROPERTY(BlueprintAssignable)
+    FOnCloseDoorEvent onCloseRequest;
   
   float lastDoorOpenSeconds = 1.f;
  public:	

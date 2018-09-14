@@ -53,20 +53,20 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
   auto sumMass = getTotalMassOnTrigger();
 
   if (sumMass >= 30.f){
-    isOpened = true;
     OpenDoor();
   }else if (isOpened && (GetWorld()->GetTimeSeconds() - lastDoorOpenSeconds > openDoorDelay)){
     CloseDoor();
-    isOpened = false;
+
   }
 }
 
 void UOpenDoor::OpenDoor(){
+  isOpened = true;
   onOpenRequest.Broadcast();
   lastDoorOpenSeconds = GetWorld()->GetTimeSeconds();
 }
 
 void UOpenDoor::CloseDoor(){
-  //auto rotator = FRotator(0.0f, 0.0f, 0.0f);
-  // GetOwner()->SetActorRotation(rotator);
+  onCloseRequest.Broadcast();
+  isOpened = false;
 }
